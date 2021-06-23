@@ -1,17 +1,17 @@
-import React from "react";
+import React, { Component } from "react";
 import ChoiceForms from "./choiceForms";
 import Joi from "joi-browser";
-import Input from "./common/input2";
-import "./Site.css";
+import Input from "../common/input2";
+import "../Site.css";
 /*import "./createExam.css";*/
-const options = ["Descriptive", "Multi-choice"];
-const defaultOption = options[0];
+// const options = ["Descriptive", "Multi-choice"];
+// const defaultOption = options[0];
 
-class QuestionForm extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { questions: this.props.questions };
-  }
+class QuestionForm extends Component {
+  // constructor(props) {
+  //   super(props);
+  //   this.state = { questions: this.props.questions };
+  // }
 
   schema = {
     examTitle: Joi.string().required().label("examTitle"),
@@ -38,14 +38,13 @@ class QuestionForm extends React.Component {
   };
 
   handleChange(i, event) {
-    let value = event.target.value;
+    const value = event.target.value;
     this.props.qBoxChange(i, value);
   }
 
-  handlequestionTypeChange(question, i, event) {
+  handlequestionTypeChange(i, event) {
     const value = event.target.value;
-    this.props.qTypeDropdown(value, question, i);
-    console.log(value);
+    this.props.qTypeDropdown(value, i);
   }
 
   handleSubmit = (event) => {
@@ -62,7 +61,7 @@ class QuestionForm extends React.Component {
     console.log("creat question form Submitted");
   };
 
-  createUI() {
+  createUI(dropdownDefault) {
     return this.props.questions.map((el, i) => (
       <div key={i}>
         <form className="exam_question" onSubmit={this.handleSubmit}>
@@ -79,12 +78,8 @@ class QuestionForm extends React.Component {
           <div>
             <label>question type: </label>
             <select
-              defaultValue={this.props.questions[i].questionTypeId}
-              onChange={this.handlequestionTypeChange.bind(
-                this,
-                this.props.questions[i].questionNum,
-                i
-              )}
+              value={dropdownDefault[i]}
+              onChange={this.handlequestionTypeChange.bind(this, i)}
             >
               <option value="Descriptive">Descriptive</option>
               <option value="Multi-choice">Multi-choice</option>
@@ -109,13 +104,12 @@ class QuestionForm extends React.Component {
                 <ChoiceForms
                   /*choice part */
                   qIndex={i}
-                  questionsLen={this.props.questions.length}
-                  question={el}
                   choices={el.choices}
                   addChoice={this.props.addChoice}
                   removeChoice={this.props.removeChoice}
                   cBoxChange={this.props.cBoxChange}
                   choiceSubmit={this.props.choiceSubmit}
+                  cTypeDropdown={this.props.cTypeDropdown}
                 />
               ) : (
                 ""
@@ -128,7 +122,12 @@ class QuestionForm extends React.Component {
   }
 
   render() {
-    return <React.Fragment>{this.createUI()}</React.Fragment>;
+    const dropdownDefault = this.props.questions.map((q) => {
+      if (q.questionTypeId === 1) return "Multi-choice";
+      return "Descriptive";
+    });
+    console.log("question dropdown", dropdownDefault);
+    return <React.Fragment>{this.createUI(dropdownDefault)}</React.Fragment>;
   }
 }
 

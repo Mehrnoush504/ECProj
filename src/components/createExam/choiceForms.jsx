@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ChoiceForm from "../createChoiceForm";
+import ChoiceForm from "./createChoiceForm";
 import "./createExam.css";
 
 class ChoiceForms extends Component {
@@ -8,14 +8,7 @@ class ChoiceForms extends Component {
     return (
       <React.Fragment>
         <div
-          onClick={(e) =>
-            this.props.addChoice(
-              this.props.questionsLen,
-              this.props.question,
-              this.props.choices.length,
-              this.props.qIndex
-            )
-          }
+          onClick={(e) => this.props.addChoice(this.props.qIndex)}
           className="add_choice"
         >
           add
@@ -24,10 +17,9 @@ class ChoiceForms extends Component {
           /*choice part */
           qIndex={this.props.qIndex}
           choices={this.props.choices}
-          question={this.props.question}
-          questionLen={this.props.questionsLen}
           removeChoice={this.props.removeChoice}
           cBoxChange={this.props.cBoxChange}
+          cTypeDropdown={this.props.cTypeDropdown}
           choiceSubmit={this.props.choiceSubmit}
         />
       </React.Fragment>

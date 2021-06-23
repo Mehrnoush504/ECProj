@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import Joi from "joi-browser";
-import Input from "../common/input2";
+import Input from "../common/input";
 import QuestionForms from "./questionForms";
 import axios from "axios";
-import { Route, Link } from "react-router-dom";
 
 import "./createExam.css";
 
@@ -22,12 +21,12 @@ class CreateExam extends Component {
   };
 
   schema = {
-    examTitle: Joi.string().required().label("examTitle"),
+    examTitle: Joi.string().required().label("exam title"),
     date: Joi.date().raw().required().label("date"),
-    stime: Joi.string().required().label("startTime"),
-    etime: Joi.string().required().label("endTime"),
-    className: Joi.string().required().label("className"),
-    searchId: Joi.string().required().label("searchId"),
+    stime: Joi.string().required().label("start time"),
+    etime: Joi.string().required().label("end time"),
+    className: Joi.string().required().label("class name"),
+    searchId: Joi.string().required().label("search Id"),
   };
 
   validate = () => {
@@ -108,6 +107,7 @@ class CreateExam extends Component {
 
     this.setState({ data, errors });
   };
+
   render() {
     const { data, errors } = this.state;
     return (
@@ -191,14 +191,15 @@ class CreateExam extends Component {
             removeQuestion={this.removeQuestionClick}
             qBoxChange={this.handleQuestionBoxChange}
             questionSubmit={this.handleQuestionSubmit}
+            qTypeDropdown={this.handleQustionTypeDropdownChange}
             /*choice part */
-            choices={this.state.choices}
-            addChoiceForm={this.addChoiceClick}
+            addChoice={this.addChoiceClick}
             removeChoice={this.removeChoiceClick}
             cBoxChange={this.handleChoiceBoxChange}
             choiceSubmit={this.handleChoiceSubmit}
+            cTypeDropdown={this.handleChoiceTypeDropdownChange}
             /*question type dropdown */
-            qTypeDropdown={this.handleQustionTypeDropdownChange}
+
             qselectValue={this.state.questionType}
           />
         </div>
@@ -212,47 +213,42 @@ class CreateExam extends Component {
   }
 
   /* question handler functions */
-  addQuestionClick = (qNum) => {
+  addQuestionClick = () => {
     const question = {
       questionTypeId: 2,
-      questionNum: qNum,
+      questionNum: -1,
       questionDescription: "",
       choices: [],
     };
 
-    console.log("qNum", qNum);
-    let questions = [question, ...this.state.questions];
-    console.log(questions);
-    if (this.state.questions.length > 0) {
-      questions.map((q, i) => {
-        q.questionNum = this.state.questions.length - i;
-      });
-    }
-    // //sort des
-    // questions.sort((a, b) => a.questionNum - b.questionNum).reverse();
+    const questions = [question, ...this.state.questions];
+
+    //updating qustion number of each question in question list
+    questions.map((q, i) => {
+      q.questionNum = questions.length - i - 1;
+    });
+
     this.setState({ questions });
 
-    console.log(this.state);
-    console.log("addQuestionClicked");
+    console.log("add q", questions);
   };
 
   removeQuestionClick = (i) => {
-    let questions = [...this.state.questions];
-    // i = questions.length - i - 1; ////////////////////////////////////check
+    const questions = [...this.state.questions];
+
     questions.splice(i, 1);
 
     questions.map((q, i) => {
-      q.questionNum = questions.length - i;
+      q.questionNum = questions.length - i - 1;
     });
+
     this.setState({ questions });
-    console.log("remove q", this.state.questions);
+    console.log("remove q", questions);
   };
 
   handleQuestionBoxChange = (i, value) => {
     const questions = [...this.state.questions];
-    //  i = questions.length - i - 1; ////////////////////////////////////check
     questions[i].questionDescription = value;
-    console.log(value);
     this.setState({ questions });
   };
 
@@ -265,62 +261,47 @@ class CreateExam extends Component {
   };
 
   /* choice handler functions*/
-  addChoiceClick = (ql, question, cNum, qIndex) => {
-    const choice = { choiceNum: cNum, choiceDescription: "", isCorrect: false };
-
+  addChoiceClick = (qIndex) => {
     const questions = [...this.state.questions];
-    //let qNum = questions.length - question.questionNum - 1; ////////////////////////////////////check
-    let qNum = question.questionNum;
+    const choice = { choiceNum: -1, choiceDescription: "", isCorrect: false };
+    const choices = [choice, ...questions[qIndex].choices];
 
-    const choices = [choice, ...this.state.questions[qIndex].choices];
+    choices.map((c, i) => {
+      c.choiceNum = choices.length - i - 1;
+    });
+    questions[qIndex].choices = choices;
+
+    this.setState({ questions });
+    console.log(`add choice(s) to question[${qIndex}]`, questions[qIndex]);
+  };
+
+  removeChoiceClick = (i, qIndex) => {
+    const questions = [...this.state.questions];
+    const choices = [...questions[qIndex].choices];
+    choices.splice(i, 1);
+
+    choices.map((c, i) => {
+      c.choiceNum = choices.length - i - 1;
+    });
 
     questions[qIndex].choices = choices;
-    questions.map((q) => {
-      q.choices.map((c, i) => {
-        c.choiceNum = questions[qIndex].choices.length - i;
-      });
-    });
-    //sort des
-    // questions.map((q) => {
-    //   q.choices.sort((a, b) => a.choiceNum - b.choiceNum).reverse();
-    // });
     this.setState({ questions });
-    console.log("add choice", this.state.questions[qIndex]);
+
+    console.log("remove c", choices);
+    console.log("update q", questions);
   };
 
-  removeChoiceClick = (question, i, qIndex) => {
+  handleChoiceBoxChange = (i, qIndex, value) => {
     const questions = [...this.state.questions];
-    //   let qNum = questions.length - question.questionNum - 1; ////////////////////////////////////check
-    //  i = questions[qNum].choices.length - i - 1;
-    //let qNum = question.questionNum;
-    questions[qIndex].choices.splice(i, 1);
-
-    questions.map((q) => {
-      q.choices.map((c, i) => {
-        c.choiceNum = questions[qIndex].choices.length - i;
-      });
-    });
-
-    this.setState({ questions });
-    console.log("update q", this.state.questions);
-
-    console.log("remove c", questions[qIndex].choices);
-  };
-
-  handleChoiceBoxChange = (i, qIndex, ql, qNum, value) => {
-    //   qNum = ql - qNum - 1; ////////////////////////////////////check
-    console.log("c", qIndex);
-    let choices = [...this.state.questions[qIndex].choices];
-    const questions = [...this.state.questions];
-    //  i = choices.length - i - 1; ////////////////////////////////////check
+    const choices = [...questions[qIndex].choices];
 
     choices[i].choiceDescription = value;
     questions[qIndex].choices = choices;
 
     this.setState({ questions });
     console.log("val", value);
-    console.log("c", choices);
-    console.log("q", this.state.questions);
+    console.log("handleChoiceBoxChange for c", choices);
+    console.log("handleChoiceBoxChange for q", questions);
   };
 
   handleChoiceSubmit = (errors) => {
@@ -332,15 +313,30 @@ class CreateExam extends Component {
   };
 
   //for dropdown
-  handleQustionTypeDropdownChange = (value, qNum, index) => {
+  handleQustionTypeDropdownChange = (value, index) => {
     const questions = [...this.state.questions];
     let id = 0;
     if (value === "Descriptive") id = 2;
     else id = 1;
-    //  qNum = questions.length - qNum - 1; ////////////////////////////////////check
     questions[index].questionTypeId = id;
+    console.log(
+      `QustionType -> questions[${index}]`,
+      questions[index].questionTypeId
+    );
     this.setState({ questions });
-    //console.log(questions[questions.length - qNum].questionTypeId);
+  };
+
+  handleChoiceTypeDropdownChange = (value, cIndex, qIndex) => {
+    const questions = [...this.state.questions];
+    const choices = [...questions[qIndex].choices];
+
+    let isCorrect = false;
+    if (value === "Correct") isCorrect = true;
+    choices[cIndex].isCorrect = isCorrect;
+    questions[qIndex].choices = choices;
+
+    console.log(`ChoiceType -> choices[${cIndex}]`, choices[cIndex].isCorrect);
+    this.setState({ questions });
   };
 }
 

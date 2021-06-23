@@ -1,12 +1,13 @@
 import React, { Component } from "react";
 import Joi from "joi-browser";
-import Input from "./common/input2";
+import Input from "../common/input2";
 import "./createExam.css";
 
 class ChoiceForm extends Component {
   constructor(props) {
     super(props);
-    this.state = { choices: this.props.choices };
+    this.state = {};
+    console.log("constructor");
   }
 
   schema = {
@@ -34,15 +35,14 @@ class ChoiceForm extends Component {
     return error ? error.details[0].message : null;
   };
 
-  handleChange(i, qIndex, q, event) {
-    let value = event.target.value;
-    this.props.cBoxChange(
-      i,
-      qIndex,
-      this.props.questionLen,
-      q.questionNum,
-      value
-    );
+  handleChange(i, qIndex, event) {
+    const value = event.target.value;
+    this.props.cBoxChange(i, qIndex, value);
+  }
+  handleChoiceTypeChange(i, event) {
+    const value = event.target.value;
+    this.props.cTypeDropdown(value, i, this.props.qIndex);
+    console.log("dropdownDfault", this.state.dropdownDefault);
   }
 
   handleSubmit = (event) => {
@@ -59,23 +59,25 @@ class ChoiceForm extends Component {
     console.log("creat choice form Submitted");
   };
 
-  createUI() {
+  createUI(dropdownDefault) {
     return this.props.choices.map((el, i) => (
       <div key={i}>
         <form className="exam_choice" onSubmit={this.handleSubmit}>
           <div className="collapse_choice">{this.props.choices.length - i}</div>
           <div
             className="remove_choice"
-            onClick={() =>
-              this.props.removeChoice(this.props.question, i, this.props.qIndex)
-            }
+            onClick={() => this.props.removeChoice(i, this.props.qIndex)}
           >
             remove
           </div>
 
           <div>
             <label>This choice is: </label>
-            <select>
+
+            <select
+              value={dropdownDefault[i]}
+              onChange={this.handleChoiceTypeChange.bind(this, i)}
+            >
               <option>Incorrect</option>
               <option>Correct</option>
             </select>
@@ -93,12 +95,7 @@ class ChoiceForm extends Component {
               <input
                 type="text"
                 value={el.choiceDescription || ""}
-                onChange={this.handleChange.bind(
-                  this,
-                  i,
-                  this.props.qIndex,
-                  this.props.question
-                )}
+                onChange={this.handleChange.bind(this, i, this.props.qIndex)}
               />
             </div>
           </div>
@@ -108,7 +105,13 @@ class ChoiceForm extends Component {
   }
 
   render() {
-    return <React.Fragment>{this.createUI()}</React.Fragment>;
+    const dropdownDefault = this.props.choices.map((c) => {
+      if (c.isCorrect) return "Correct";
+      return "Incorrect";
+    });
+
+    console.log("choice dropdown", dropdownDefault);
+    return <React.Fragment>{this.createUI(dropdownDefault)}</React.Fragment>;
   }
 }
 

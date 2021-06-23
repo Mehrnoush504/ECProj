@@ -68,30 +68,30 @@ class CreateExam extends Component {
     console.log("calling server...");
     const min = 97;
     const max = 122;
-    const size = Math.random() / 30;
+    const size = (30 * Math.random() + 1) % 31;
     let eId = "";
     for (let i = 0; i < size; i++) {
-      const rand = (min + Math.random() * (max - min)) / 32;
-      eId = eId + rand + "a";
+      const rand = Math.floor((max - min + 1) * Math.random());
+      eId = eId + String.fromCharCode(min + rand);
     }
 
     console.log(eId);
     let obj = {
       examId: eId,
-      examSearchId: "ssearchlll",
-      examName: this.state.data.examName,
+      examSearchId: this.state.data.searchId,
+      examName: this.state.data.examTitle,
       isPublic: true,
       isFinished: false,
       questionNum: 2,
-      startTime: this.state.data.stime,
-      endTime: this.state.data.etime,
+      startTime: this.state.data.date + "T" + this.state.data.stime + ":00.000",
+      endTime: this.state.data.date + "T" + this.state.data.etime + ":00.000",
       questions: this.state.questions,
     };
     const { data } = await axios.put(
       "https://run.mocky.io/v3/1efb72d8-0bcc-4b1c-af64-94d2170516e4",
       obj
     );
-    console.log(obj);
+    console.log("object", obj);
     console.log("submitted");
     this.props.history.replace("/my-exams");
   };

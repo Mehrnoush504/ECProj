@@ -1,8 +1,14 @@
 import React, { Component } from "react";
 class Timer extends Component {
-  constructor() {
-    super();
-    this.state = { time: {}, seconds: 5 };
+  constructor(props) {
+    super(props);
+    // let oneday = new Date("2021-06-24T00:14:00.0");
+    // let today = new Date();
+    // //console.log("c", date);
+    // let seconds = Math.floor((oneday.getTime() - today.getTime()) / 1000);
+    // if (seconds < 0) seconds = 0;
+    // console.log("constructor");
+    this.state = { time: {}, seconds: this.props.seconds };
     this.timer = 0;
     this.startTimer = this.startTimer.bind(this);
     this.countDown = this.countDown.bind(this);
@@ -26,12 +32,13 @@ class Timer extends Component {
   }
 
   componentDidMount() {
+    console.log("didmount", this.state.seconds);
     let timeLeftVar = this.secondsToTime(this.state.seconds);
     this.setState({ time: timeLeftVar });
   }
 
   startTimer() {
-    if (this.timer == 0 && this.state.seconds > 0) {
+    if (this.timer === 0 && this.state.seconds > 0) {
       this.timer = setInterval(this.countDown, 1000);
     }
   }
@@ -45,16 +52,19 @@ class Timer extends Component {
     });
 
     // Check if we're at zero.
-    if (seconds == 0) {
+    if (seconds === 0) {
       clearInterval(this.timer);
     }
+    const { h, m, s } = this.state.time;
+    if (h === 0 && m === 0 && s === 0) this.props.history.replace("/my-exams");
   }
 
   render() {
+    const { h, m, s } = this.state.time;
     return (
       <div>
-        <button onClick={this.startTimer}>Start</button>
-        m: {this.state.time.m} s: {this.state.time.s}
+        {this.startTimer()}
+        {h < 10 ? "0" + h : h} : {m < 10 ? "0" + m : m} : {s < 10 ? "0" + s : s}
       </div>
     );
   }
